@@ -1,6 +1,19 @@
-import type { IntakeData } from './types';
+import type { Category, IntakeData } from './types';
 
 const STORAGE_KEY = 'alerta:intake';
+
+// Mirrors the Category union in lib/types.ts (the same literals also live in
+// lib/claude.ts's VALID_CATEGORIES). Kept as a plain array here — rather than
+// importing lib/claude.ts — so this client-side module doesn't pull the
+// Anthropic SDK into the browser bundle.
+const VALID_CATEGORIES: Category[] = [
+  'foto-sem-autorizacao',
+  'imagem-criada-ia',
+  'imagem-alterada',
+  'publicada-sem-consentimento',
+  'ameaca-exposicao',
+  'nao-sei',
+];
 
 const EMPTY_INTAKE: IntakeData = {
   categories: [],
@@ -11,10 +24,23 @@ const EMPTY_INTAKE: IntakeData = {
 
 export function loadIntake(): IntakeData {
   if (typeof window === 'undefined') return { ...EMPTY_INTAKE };
-  const raw = window.localStorage.getItem(STORAGE_KEY);
-  if (!raw) return { ...EMPTY_INTAKE };
+
+  let raw: string | null;
   try {
-    return { ...EMPTY_INTAKE, ...JSON.parse(raw) };
+    raw = window.localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return { ...EMPTY_INTAKE };
+  }
+  if (!raw) return { ...EMPTY_INTAKE };
+
+  try {
+    const parsed = JSON.parse(raw);
+    const categories = Array.isArray(parsed?.categories)
+      ? parsed.categories.filter((item: unknown): item is Category =>
+          VALID_CATEGORIES.includes(item as Category)
+        )
+      : EMPTY_INTAKE.categories;
+    return { ...EMPTY_INTAKE, ...parsed, categories };
   } catch {
     return { ...EMPTY_INTAKE };
   }
@@ -22,10 +48,18 @@ export function loadIntake(): IntakeData {
 
 export function saveIntake(data: IntakeData): void {
   if (typeof window === 'undefined') return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch {
+    // Best-effort persistence only — ignore quota/security errors.
+  }
 }
 
 export function clearIntake(): void {
   if (typeof window === 'undefined') return;
-  window.localStorage.removeItem(STORAGE_KEY);
+  try {
+    window.localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // Ignore security errors in locked-down browsers.
+  }
 }

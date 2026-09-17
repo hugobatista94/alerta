@@ -58,6 +58,7 @@ export function prioritizeCards(selected: Category[]): CardId[] {
 
   for (const category of selected) {
     const weights = CATEGORY_WEIGHTS[category];
+    if (!weights) continue;
     for (const cardId of BASE_CARD_ORDER) {
       scores.set(cardId, (scores.get(cardId) ?? 0) + weights[cardId]);
     }

@@ -42,4 +42,9 @@ describe('prioritizeCards', () => {
     expect(result).toHaveLength(5);
     expect(new Set(result).size).toBe(5);
   });
+
+  it('ignores unrecognized category values instead of throwing', () => {
+    expect(() => prioritizeCards(['categoria-invalida'] as any)).not.toThrow();
+    expect(prioritizeCards(['categoria-invalida'] as any)).toEqual(BASE_CARD_ORDER);
+  });
 });
