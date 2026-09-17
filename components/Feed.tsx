@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import { HeroCard } from './HeroCard';
 import { IntakeCard } from './IntakeCard';
+import { DenunciaCard } from './DenunciaCard';
+import { RightsCard } from './RightsCard';
+import { PreventionCard } from './PreventionCard';
 import { EducationCard } from './EducationCard';
 import { ClosingCard } from './ClosingCard';
 import { prioritizeCards } from '@/lib/feedPriority';
@@ -35,6 +38,31 @@ export function Feed() {
 
   const cardOrder: CardId[] = prioritizeCards(categories);
 
+  function renderDynamicCard(id: CardId) {
+    switch (id) {
+      case 'denuncia':
+        return <DenunciaCard key={id} />;
+      case 'direitos':
+        return <RightsCard key={id} />;
+      case 'prevencao':
+        return <PreventionCard key={id} />;
+      case 'evidencias':
+        return (
+          <p key={id} className="text-sm text-alerta-light/60">
+            (placeholder) evidencias
+          </p>
+        );
+      case 'apoio':
+        return (
+          <p key={id} className="text-sm text-alerta-light/60">
+            (placeholder) apoio
+          </p>
+        );
+      default:
+        return null;
+    }
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <HeroCard />
@@ -44,13 +72,7 @@ export function Feed() {
         onToggleCategory={toggleCategory}
         onFreeTextChange={setFreeText}
       />
-      <ol className="flex flex-col gap-2 text-sm text-alerta-light/60">
-        {cardOrder.map((id, index) => (
-          <li key={id}>
-            {index + 1}. {id}
-          </li>
-        ))}
-      </ol>
+      {cardOrder.map(renderDynamicCard)}
       <EducationCard />
       <ClosingCard />
     </div>
