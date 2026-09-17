@@ -12,6 +12,7 @@ import { EducationCard } from './EducationCard';
 import { ClosingCard } from './ClosingCard';
 import { prioritizeCards } from '@/lib/feedPriority';
 import { loadIntake, saveIntake, clearIntake } from '@/lib/storage';
+import { clearEvidenceFiles } from '@/lib/evidenceFiles';
 import type { Category, CardId } from '@/lib/types';
 
 export function Feed() {
@@ -45,12 +46,13 @@ export function Feed() {
     return () => clearTimeout(timer);
   }, [showClearedMessage]);
 
-  function handleClearData() {
+  async function handleClearData() {
     const confirmed = window.confirm(
       'Tem certeza que deseja apagar todos os seus dados deste dispositivo?'
     );
     if (!confirmed) return;
     clearIntake();
+    await clearEvidenceFiles();
     setCategories([]);
     setFreeText('');
     setEvidenceNotes('');
