@@ -20,6 +20,7 @@ export function Feed() {
   const [reportDraft, setReportDraft] = useState('');
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null);
 
   useEffect(() => {
     const stored = loadIntake();
@@ -52,6 +53,9 @@ export function Feed() {
         (prev) => Array.from(new Set([...prev, ...result.categories])) as Category[]
       );
       setAiSummary(result.summary);
+      setAnalyzeError(null);
+    } catch {
+      setAnalyzeError('Não foi possível analisar agora. Tente novamente em instantes.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -101,6 +105,7 @@ export function Feed() {
         onAnalyze={handleAnalyze}
         isAnalyzing={isAnalyzing}
         aiSummary={aiSummary}
+        analyzeError={analyzeError}
       />
       {cardOrder.map(renderDynamicCard)}
       <EducationCard />

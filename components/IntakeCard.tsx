@@ -23,6 +23,7 @@ interface IntakeCardProps {
   onAnalyze: () => void;
   isAnalyzing: boolean;
   aiSummary: string | null;
+  analyzeError?: string | null;
 }
 
 export function IntakeCard({
@@ -33,6 +34,7 @@ export function IntakeCard({
   onAnalyze,
   isAnalyzing,
   aiSummary,
+  analyzeError,
 }: IntakeCardProps) {
   return (
     <section className="rounded-2xl bg-alerta-charcoal p-6 text-alerta-light shadow-lg">
@@ -69,6 +71,11 @@ export function IntakeCard({
       {aiSummary && (
         <p className="mt-3 rounded-lg bg-alerta-black/60 p-3 text-sm text-alerta-light/90">
           {aiSummary}
+        </p>
+      )}
+      {analyzeError && (
+        <p className="mt-3 text-sm text-red-400">
+          {analyzeError}
         </p>
       )}
     </section>

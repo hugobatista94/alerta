@@ -21,6 +21,7 @@ export function EvidenceCard({
   onReportDraftChange,
 }: EvidenceCardProps) {
   const [isDrafting, setIsDrafting] = useState(false);
+  const [draftError, setDraftError] = useState<string | null>(null);
 
   async function handleDraft() {
     setIsDrafting(true);
@@ -32,6 +33,9 @@ export function EvidenceCard({
       });
       const result = await response.json();
       onReportDraftChange(result.draft);
+      setDraftError(null);
+    } catch {
+      setDraftError('Não foi possível gerar o rascunho agora. Tente novamente em instantes.');
     } finally {
       setIsDrafting(false);
     }
@@ -58,6 +62,11 @@ export function EvidenceCard({
       >
         {isDrafting ? 'Redigindo...' : 'Ajude-me a redigir minha denúncia'}
       </button>
+      {draftError && (
+        <p className="mt-3 text-sm text-red-400">
+          {draftError}
+        </p>
+      )}
       {reportDraft && (
         <textarea
           value={reportDraft}
