@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Category } from '@/lib/types';
 import {
   addEvidenceFile,
@@ -39,19 +39,24 @@ export function EvidenceCard({
   const [files, setFiles] = useState<EvidenceFileMeta[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     listEvidenceFiles().then(setFiles);
   }, []);
 
   async function handleFilesSelected(event: React.ChangeEvent<HTMLInputElement>) {
-    const selected = event.target.files;
+    const selectedFiles = event.target.files ? Array.from(event.target.files) : [];
+    // Reset the input's value only after snapshotting the files into a plain
+    // array: event.target.files is a live FileList tied to the input's
+    // value, so clearing the value here (to allow re-selecting the same
+    // file later) would otherwise empty the very list we just captured.
     event.target.value = '';
-    if (!selected || selected.length === 0) return;
+    if (selectedFiles.length === 0) return;
 
     setIsUploading(true);
     try {
-      for (const file of Array.from(selected)) {
+      for (const file of selectedFiles) {
         await addEvidenceFile(file);
       }
       setFiles(await listEvidenceFiles());
@@ -100,22 +105,34 @@ export function EvidenceCard({
         placeholder="Ex: print de 12/09 do perfil @exemplo, link: ..."
       />
 
-      <label className="mt-4 block text-sm text-alerta-light/80">
+      <p className="mt-4 text-sm text-alerta-light/80">
         Anexe prints, imagens ou documentos (ficam salvos só neste
         dispositivo):
-      </label>
+      </p>
       <input
+        ref={fileInputRef}
         type="file"
         multiple
         accept={ACCEPTED_FILE_TYPES}
         onChange={handleFilesSelected}
         disabled={isUploading}
-        className="mt-2 block w-full text-sm text-alerta-light/80 file:mr-3 file:rounded-lg file:border-0 file:bg-alerta-light/10 file:px-3 file:py-2 file:text-sm file:font-medium file:text-alerta-light hover:file:bg-alerta-light/20 disabled:opacity-50"
+        className="hidden"
       />
-      {isUploading && (
-        <p className="mt-2 text-sm text-alerta-light/60">Anexando...</p>
-      )}
+      <button
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+        disabled={isUploading}
+        className="mt-2 rounded-lg border border-alerta-light/30 bg-alerta-light/10 px-4 py-2 text-sm font-medium text-alerta-light hover:bg-alerta-light/20 disabled:opacity-50"
+      >
+        {isUploading ? 'Anexando...' : 'Escolher arquivos'}
+      </button>
       {uploadError && <p className="mt-2 text-sm text-red-400">{uploadError}</p>}
+
+      {files.length === 0 && !isUploading && (
+        <p className="mt-3 text-sm text-alerta-light/50">
+          Nenhum arquivo anexado ainda.
+        </p>
+      )}
 
       {files.length > 0 && (
         <ul className="mt-3 space-y-2">
