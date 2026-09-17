@@ -11,7 +11,7 @@ import { PreventionCard } from './PreventionCard';
 import { EducationCard } from './EducationCard';
 import { ClosingCard } from './ClosingCard';
 import { prioritizeCards } from '@/lib/feedPriority';
-import { loadIntake, saveIntake } from '@/lib/storage';
+import { loadIntake, saveIntake, clearIntake } from '@/lib/storage';
 import type { Category, CardId } from '@/lib/types';
 
 export function Feed() {
@@ -23,6 +23,7 @@ export function Feed() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [showClearedMessage, setShowClearedMessage] = useState(false);
 
   useEffect(() => {
     const stored = loadIntake();
@@ -37,6 +38,27 @@ export function Feed() {
     if (!hasLoaded) return;
     saveIntake({ categories, freeText, evidenceNotes, reportDraft });
   }, [hasLoaded, categories, freeText, evidenceNotes, reportDraft]);
+
+  useEffect(() => {
+    if (!showClearedMessage) return;
+    const timer = setTimeout(() => setShowClearedMessage(false), 4000);
+    return () => clearTimeout(timer);
+  }, [showClearedMessage]);
+
+  function handleClearData() {
+    const confirmed = window.confirm(
+      'Tem certeza que deseja apagar todos os seus dados deste dispositivo?'
+    );
+    if (!confirmed) return;
+    clearIntake();
+    setCategories([]);
+    setFreeText('');
+    setEvidenceNotes('');
+    setReportDraft('');
+    setAiSummary(null);
+    setAnalyzeError(null);
+    setShowClearedMessage(true);
+  }
 
   function toggleCategory(id: Category) {
     setCategories((prev) =>
@@ -109,6 +131,20 @@ export function Feed() {
       />
       {cardOrder.map(renderDynamicCard)}
       <EducationCard />
+      <div className="flex flex-col items-center gap-2 py-2 text-center">
+        <button
+          type="button"
+          onClick={handleClearData}
+          className="rounded-lg border border-alerta-light/40 bg-transparent px-4 py-2 text-xs font-medium text-alerta-light/70 hover:border-alerta-red hover:text-alerta-light"
+        >
+          Apagar meus dados
+        </button>
+        {showClearedMessage && (
+          <p className="text-xs text-alerta-light/70">
+            Seus dados foram apagados deste dispositivo.
+          </p>
+        )}
+      </div>
       <ClosingCard />
     </div>
   );
