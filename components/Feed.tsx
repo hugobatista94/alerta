@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { HeroCard } from './HeroCard';
 import { IntakeCard } from './IntakeCard';
+import { EducationCard } from './EducationCard';
+import { ClosingCard } from './ClosingCard';
 import { prioritizeCards } from '@/lib/feedPriority';
 import { loadIntake, saveIntake } from '@/lib/storage';
 import type { Category, CardId } from '@/lib/types';
@@ -49,6 +51,8 @@ export function Feed() {
           </li>
         ))}
       </ol>
+      <EducationCard />
+      <ClosingCard />
     </div>
   );
 }
