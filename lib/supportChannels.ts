@@ -9,7 +9,7 @@ export const NATIONAL_SUPPORT_CHANNELS: SupportChannel[] = [
     name: 'Delegacia Eletrônica / Delegacia de Crimes Cibernéticos',
     description:
       'Registre um boletim de ocorrência online ou procure a delegacia mais próxima.',
-    url: 'https://www.gov.br/pt-br/servicos/registrar-ocorrencia-policial-online',
+    url: 'https://delegaciavirtual.sinesp.gov.br/portal/home',
   },
   {
     name: 'Disque 100 — Direitos Humanos',
