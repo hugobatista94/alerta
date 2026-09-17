@@ -25,7 +25,17 @@ describe('findNearbySupportPoints', () => {
     const origin = { lat: -23.5505, lon: -46.6333 };
     const mockResponse = {
       elements: [
-        { id: 1, lat: -23.6, lon: -46.7, tags: { name: 'Delegacia Distante' } },
+        {
+          id: 1,
+          lat: -23.6,
+          lon: -46.7,
+          tags: {
+            name: 'Delegacia Distante',
+            'addr:street': 'Rua das Flores',
+            'addr:housenumber': '123',
+            'addr:suburb': 'Centro',
+          },
+        },
         { id: 2, lat: -23.551, lon: -46.634, tags: { name: 'Delegacia Perto' } },
         { id: 3, center: { lat: -23.5515, lon: -46.6335 }, tags: {} },
       ],
@@ -48,6 +58,12 @@ describe('findNearbySupportPoints', () => {
     for (let i = 1; i < points.length; i += 1) {
       expect(points[i].distanceKm).toBeGreaterThanOrEqual(points[i - 1].distanceKm);
     }
+
+    const distante = points.find((point) => point.name === 'Delegacia Distante');
+    expect(distante?.address).toBe('Rua das Flores, 123 — Centro');
+
+    const perto = points.find((point) => point.name === 'Delegacia Perto');
+    expect(perto?.address).toBeUndefined();
   });
 
   it('throws when the Overpass API responds with an error status', async () => {

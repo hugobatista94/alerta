@@ -36,7 +36,8 @@ export function SupportCard() {
           setStatus('error');
         }
       },
-      () => setStatus('denied')
+      () => setStatus('denied'),
+      { timeout: 15000, maximumAge: 0 }
     );
   }
 
@@ -48,6 +49,16 @@ export function SupportCard() {
           <li key={channel.name}>
             <p className="font-medium">{channel.name}</p>
             <p className="text-alerta-light/70">{channel.description}</p>
+            {channel.url && (
+              <a
+                href={channel.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline text-alerta-light hover:text-alerta-red"
+              >
+                Abrir canal
+              </a>
+            )}
           </li>
         ))}
       </ul>
@@ -76,10 +87,15 @@ export function SupportCard() {
       {status === 'granted' && origin && (
         <div className="mt-4">
           <SupportMap origin={origin} points={points} />
-          <ul className="mt-3 space-y-1 text-sm">
+          <ul className="mt-3 space-y-2 text-sm">
             {points.map((point) => (
               <li key={point.id}>
-                {point.name} — {point.distanceKm.toFixed(1)} km
+                <p>
+                  {point.name} — {point.distanceKm.toFixed(1)} km
+                </p>
+                {point.address && (
+                  <p className="text-xs text-alerta-light/60">{point.address}</p>
+                )}
               </li>
             ))}
           </ul>

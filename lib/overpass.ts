@@ -7,6 +7,7 @@ export interface SupportPoint extends LatLon {
   id: string;
   name: string;
   distanceKm: number;
+  address?: string;
 }
 
 const EARTH_RADIUS_KM = 6371;
@@ -29,11 +30,30 @@ interface OverpassElement {
   lat?: number;
   lon?: number;
   center?: { lat: number; lon: number };
-  tags?: { name?: string };
+  tags?: {
+    name?: string;
+    'addr:street'?: string;
+    'addr:housenumber'?: string;
+    'addr:suburb'?: string;
+  };
 }
 
 interface OverpassResponse {
   elements: OverpassElement[];
+}
+
+function composeAddress(tags?: OverpassElement['tags']): string | undefined {
+  if (!tags) return undefined;
+  const street = tags['addr:street'];
+  const houseNumber = tags['addr:housenumber'];
+  const suburb = tags['addr:suburb'];
+
+  const streetLine = street
+    ? [street, houseNumber].filter(Boolean).join(', ')
+    : undefined;
+
+  const parts = [streetLine, suburb].filter(Boolean);
+  return parts.length > 0 ? parts.join(' — ') : undefined;
 }
 
 export async function findNearbySupportPoints(
@@ -46,6 +66,7 @@ export async function findNearbySupportPoints(
     method: 'POST',
     headers: { 'Content-Type': 'text/plain' },
     body: query,
+    signal: AbortSignal.timeout(20000),
   });
 
   if (!response.ok) {
@@ -55,7 +76,7 @@ export async function findNearbySupportPoints(
   const data = (await response.json()) as OverpassResponse;
 
   return data.elements
-    .map((element) => {
+    .map((element): SupportPoint | null => {
       const lat = element.lat ?? element.center?.lat;
       const lon = element.lon ?? element.center?.lon;
       if (lat === undefined || lon === undefined) return null;
@@ -65,6 +86,7 @@ export async function findNearbySupportPoints(
         lat,
         lon,
         distanceKm: haversineDistanceKm(origin, { lat, lon }),
+        address: composeAddress(element.tags),
       };
     })
     .filter((point): point is SupportPoint => point !== null)

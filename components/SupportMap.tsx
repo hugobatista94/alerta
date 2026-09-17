@@ -36,6 +36,12 @@ export default function SupportMap({ origin, points }: SupportMapProps) {
         <Marker key={point.id} position={[point.lat, point.lon]} icon={markerIcon}>
           <Popup>
             {point.name}
+            {point.address && (
+              <>
+                <br />
+                <span style={{ fontSize: '0.85em', opacity: 0.8 }}>{point.address}</span>
+              </>
+            )}
             <br />
             {point.distanceKm.toFixed(1)} km de distância
           </Popup>
