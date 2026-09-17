@@ -112,9 +112,11 @@ Scroll vertical de cards, nesta ordem lógica:
    pontos de apoio/delegacias mais próximos, com endereço e distância.
    Se a pessoa não conceder a permissão, o card continua funcional apenas
    com a lista estática nacional.
-4. **Cards educativos fixos** (sempre presentes, abaixo dos priorizados): O
-   que é IA generativa / Como funciona o uso indevido de imagem / Prevenção
-   (conteúdo direto do panfleto original).
+4. **Card educativo fixo** (sempre presente, abaixo dos priorizados): "O que
+   é?" — explica como a IA generativa permite criar/editar/manipular imagens
+   e lista os usos ofensivos mais comuns (conteúdo direto do panfleto
+   original). Prevenção já está coberta como card dinâmico no item 3 acima,
+   não se repete aqui.
 5. **Card de encerramento**: "Sua imagem é sua história. Respeite." mais
    reforço de direitos ("O que é seu, só você pode autorizar.").
 
