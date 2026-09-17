@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { HeroCard } from './HeroCard';
 import { IntakeCard } from './IntakeCard';
+import { EvidenceCard } from './EvidenceCard';
 import { DenunciaCard } from './DenunciaCard';
 import { RightsCard } from './RightsCard';
 import { PreventionCard } from './PreventionCard';
@@ -17,6 +18,8 @@ export function Feed() {
   const [freeText, setFreeText] = useState('');
   const [evidenceNotes, setEvidenceNotes] = useState('');
   const [reportDraft, setReportDraft] = useState('');
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   useEffect(() => {
     const stored = loadIntake();
@@ -36,22 +39,46 @@ export function Feed() {
     );
   }
 
+  async function handleAnalyze() {
+    setIsAnalyzing(true);
+    try {
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ freeText }),
+      });
+      const result = await response.json();
+      setCategories(
+        (prev) => Array.from(new Set([...prev, ...result.categories])) as Category[]
+      );
+      setAiSummary(result.summary);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  }
+
   const cardOrder: CardId[] = prioritizeCards(categories);
 
   function renderDynamicCard(id: CardId) {
     switch (id) {
+      case 'evidencias':
+        return (
+          <EvidenceCard
+            key={id}
+            categories={categories}
+            freeText={freeText}
+            evidenceNotes={evidenceNotes}
+            reportDraft={reportDraft}
+            onEvidenceNotesChange={setEvidenceNotes}
+            onReportDraftChange={setReportDraft}
+          />
+        );
       case 'denuncia':
         return <DenunciaCard key={id} />;
       case 'direitos':
         return <RightsCard key={id} />;
       case 'prevencao':
         return <PreventionCard key={id} />;
-      case 'evidencias':
-        return (
-          <p key={id} className="text-sm text-alerta-light/60">
-            (placeholder) evidencias
-          </p>
-        );
       case 'apoio':
         return (
           <p key={id} className="text-sm text-alerta-light/60">
@@ -71,6 +98,9 @@ export function Feed() {
         freeText={freeText}
         onToggleCategory={toggleCategory}
         onFreeTextChange={setFreeText}
+        onAnalyze={handleAnalyze}
+        isAnalyzing={isAnalyzing}
+        aiSummary={aiSummary}
       />
       {cardOrder.map(renderDynamicCard)}
       <EducationCard />

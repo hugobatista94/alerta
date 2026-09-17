@@ -20,6 +20,9 @@ interface IntakeCardProps {
   freeText: string;
   onToggleCategory: (id: Category) => void;
   onFreeTextChange: (value: string) => void;
+  onAnalyze: () => void;
+  isAnalyzing: boolean;
+  aiSummary: string | null;
 }
 
 export function IntakeCard({
@@ -27,6 +30,9 @@ export function IntakeCard({
   freeText,
   onToggleCategory,
   onFreeTextChange,
+  onAnalyze,
+  isAnalyzing,
+  aiSummary,
 }: IntakeCardProps) {
   return (
     <section className="rounded-2xl bg-alerta-charcoal p-6 text-alerta-light shadow-lg">
@@ -52,6 +58,19 @@ export function IntakeCard({
         className="mt-2 w-full rounded-lg bg-alerta-black p-3 text-sm text-alerta-light outline-none ring-1 ring-alerta-light/20 focus:ring-alerta-red"
         placeholder="Ex: encontrei uma foto minha alterada com IA num grupo de WhatsApp..."
       />
+      <button
+        type="button"
+        onClick={onAnalyze}
+        disabled={isAnalyzing || freeText.trim().length === 0}
+        className="mt-3 rounded-lg bg-alerta-red px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+      >
+        {isAnalyzing ? 'Analisando...' : 'Analisar com IA'}
+      </button>
+      {aiSummary && (
+        <p className="mt-3 rounded-lg bg-alerta-black/60 p-3 text-sm text-alerta-light/90">
+          {aiSummary}
+        </p>
+      )}
     </section>
   );
 }
