@@ -24,7 +24,12 @@ const VALID_CATEGORIES: Category[] = [
 function mockAnalyze(freeText: string): AnalyzeResult {
   const text = freeText.toLowerCase();
   const categories: Category[] = [];
-  if (text.includes('ia') || text.includes('intelig')) {
+  if (
+    /\bia\b/.test(text) ||
+    text.includes('intelig') ||
+    text.includes('deepfake') ||
+    text.includes('gerad')
+  ) {
     categories.push('imagem-criada-ia');
   }
   if (text.includes('amea') || text.includes('expor') || text.includes('exposi')) {
@@ -60,9 +65,18 @@ function mockDraftReport(input: DraftReportInput): string {
   ].join('\n');
 }
 
-function parseAnalyzeResponse(raw: string, fallback: AnalyzeResult): AnalyzeResult {
+// Claude sometimes wraps JSON responses in a markdown code fence even when
+// explicitly asked not to. Strip a leading/trailing ```json or ``` fence
+// before attempting to parse.
+function stripCodeFence(raw: string): string {
+  const trimmed = raw.trim();
+  const fenceMatch = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/);
+  return fenceMatch ? fenceMatch[1].trim() : trimmed;
+}
+
+export function parseAnalyzeResponse(raw: string, fallback: AnalyzeResult): AnalyzeResult {
   try {
-    const parsed = JSON.parse(raw);
+    const parsed = JSON.parse(stripCodeFence(raw));
     const categories = Array.isArray(parsed.categories)
       ? parsed.categories.filter((item: unknown): item is Category =>
           VALID_CATEGORIES.includes(item as Category)
@@ -73,6 +87,7 @@ function parseAnalyzeResponse(raw: string, fallback: AnalyzeResult): AnalyzeResu
       summary: typeof parsed.summary === 'string' ? parsed.summary : fallback.summary,
     };
   } catch {
+    console.error('[claude] analyzeReport: failed to parse model response, using fallback');
     return fallback;
   }
 }
@@ -97,7 +112,10 @@ export async function analyzeReport(freeText: string): Promise<AnalyzeResult> {
   });
 
   const textBlock = message.content.find((block) => block.type === 'text');
-  if (!textBlock || textBlock.type !== 'text') return fallback;
+  if (!textBlock || textBlock.type !== 'text') {
+    console.error('[claude] analyzeReport: no text block in model response, using fallback');
+    return fallback;
+  }
   return parseAnalyzeResponse(textBlock.text, fallback);
 }
 
@@ -121,5 +139,9 @@ export async function draftReport(input: DraftReportInput): Promise<string> {
   });
 
   const textBlock = message.content.find((block) => block.type === 'text');
-  return textBlock && textBlock.type === 'text' ? textBlock.text : fallback;
+  if (!textBlock || textBlock.type !== 'text') {
+    console.error('[claude] draftReport: no text block in model response, using fallback');
+    return fallback;
+  }
+  return textBlock.text;
 }
