@@ -17,6 +17,25 @@ Público: pessoas que sofreram uso indevido de sua imagem (incluindo conteúdo
 gerado/manipulado por IA), buscando entender o que aconteceu, o que fazer, e
 onde buscar apoio.
 
+## Diferenciais em relação a apps de referência (ex: apps de apoio à mulher)
+
+- **Foco específico em abuso de imagem por IA** (deepfakes, montagens não
+  consentidas), um problema recente e pouco coberto por serviços de apoio
+  generalistas.
+- **Público inclusivo**: não é limitado a mulheres — qualquer pessoa pode ser
+  vítima de uso indevido de imagem por IA.
+- **Feed adaptativo**, não menu de navegação: o conteúdo se reordena sozinho
+  conforme o que a pessoa relata, sem exigir que ela saiba onde procurar.
+- **IA que age, não só informa**: ajuda a estruturar o relato e a redigir a
+  denúncia, não apenas exibe texto explicativo estático.
+- **Privacidade por padrão**: nenhum dado sensível é salvo em servidor ou
+  banco de dados — tudo permanece no dispositivo da pessoa.
+- **Zero fricção de acesso**: aplicação web, sem necessidade de baixar app de
+  loja — acesso imediato por link, relevante num momento de crise.
+- **Localização sem infraestrutura paga**: encontra apoio/delegacias
+  próximas usando dados abertos (OpenStreetMap), sem depender de orçamento
+  para APIs pagas.
+
 ## Decisões de escopo (fechadas com o usuário)
 
 - **É uma aplicação web**, não um aplicativo móvel nativo. Deve funcionar bem
@@ -37,6 +56,10 @@ onde buscar apoio.
 - Se a chave de API da Claude não estiver configurada, os recursos de IA
   operam em modo mock (respostas coerentes pré-definidas), sem quebrar a
   experiência.
+- **Localização é usada, mas nunca armazenada**: a coordenada obtida via
+  navegador é usada apenas em tempo real para consultar pontos de apoio
+  próximos, e descartada em seguida (não vai para `localStorage` nem para
+  nenhum servidor controlado pela aplicação).
 
 ## Arquitetura
 
@@ -50,6 +73,13 @@ onde buscar apoio.
   sobreviver a reload de página.
 - Deploy alvo: Vercel (compatível com free tier), mas deve rodar localmente
   via `npm run dev` sem depender de nenhum serviço externo configurado.
+- **Localização e mapa**: `navigator.geolocation` (API nativa do navegador)
+  para obter a posição da pessoa mediante permissão explícita; consulta à
+  **Overpass API** (OpenStreetMap) para buscar pontos de apoio próximos
+  (`amenity=police`, e opcionalmente outras categorias de apoio mapeadas);
+  exibição num mapa com **Leaflet** + tiles do OpenStreetMap. Toda essa
+  cadeia roda no client, sem chave de API paga e sem passar pelo backend da
+  aplicação.
 
 ## Estrutura do feed (página única `/`)
 
@@ -73,6 +103,15 @@ Scroll vertical de cards, nesta ordem lógica:
    Direitos → Prevenção. Cards não diretamente relevantes ao caso continuam
    visíveis (função educativa geral), mas com menor destaque visual/posição
    mais baixa no feed.
+
+   O card de **Rede de Apoio** combina duas partes: (a) uma lista estática
+   de canais oficiais nacionais (ex: Polícia Civil / Delegacia Eletrônica,
+   Disque 100, SaferNet Brasil, canais de denúncia das plataformas,
+   Defensoria Pública) e (b) um bloco opcional "Ver apoio perto de mim",
+   que pede permissão de localização e mostra num mapa (Leaflet/OSM) os
+   pontos de apoio/delegacias mais próximos, com endereço e distância.
+   Se a pessoa não conceder a permissão, o card continua funcional apenas
+   com a lista estática nacional.
 4. **Cards educativos fixos** (sempre presentes, abaixo dos priorizados): O
    que é IA generativa / Como funciona o uso indevido de imagem / Prevenção
    (conteúdo direto do panfleto original).
@@ -119,12 +158,14 @@ Direto do panfleto original:
 - Teste manual do fluxo completo (seleção de chip → reordenação do feed →
   uso dos botões de IA em modo mock) em viewport mobile e desktop antes de
   considerar o MVP pronto.
+- Teste manual do card de localização nos dois cenários: permissão
+  concedida (mapa e pontos próximos aparecem) e permissão negada (card
+  permanece funcional só com a lista estática nacional).
 
 ## Fora de escopo (fases futuras, não implementar agora)
 
 - Contas de usuário, login e sincronização entre dispositivos.
 - Banco de dados / persistência no servidor.
-- Mapa de pontos de apoio (delegacias, ONGs) com geolocalização.
 - Transformação em PWA instalável.
 - Upload real de arquivos de evidência (prints, imagens) — no MVP a pessoa
   apenas descreve/lista as evidências em texto.
