@@ -5,13 +5,6 @@ export const AI_MISUSE_EXAMPLES = [
   'Difamação e exposição',
 ];
 
-export const ENCOURAGEMENT_MESSAGES = [
-  'Você não fez nada de errado. A responsabilidade é de quem usou sua imagem sem permissão.',
-  'Buscar ajuda é um ato de coragem, não de fraqueza. Muita gente já passou por isso e seguiu em frente.',
-  'Isso que aconteceu com você tem nome, tem consequência legal, e você tem direito a apoio.',
-  'Você não está sozinha ou sozinho nisso. Passo a passo, é possível reconstruir a sensação de segurança.',
-];
-
 export const PREVENTION_TIPS = [
   {
     title: 'Proteja seus dados',

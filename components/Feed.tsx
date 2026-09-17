@@ -9,7 +9,6 @@ import { SupportCard } from './SupportCard';
 import { RightsCard } from './RightsCard';
 import { PreventionCard } from './PreventionCard';
 import { EducationCard } from './EducationCard';
-import { EncouragementFooter } from './EncouragementFooter';
 import { ClosingCard } from './ClosingCard';
 import { prioritizeCards } from '@/lib/feedPriority';
 import { loadIntake, saveIntake, clearIntake } from '@/lib/storage';
@@ -148,7 +147,6 @@ export function Feed() {
           </p>
         )}
       </div>
-      <EncouragementFooter />
       <ClosingCard />
     </div>
   );
