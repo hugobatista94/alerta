@@ -5,6 +5,7 @@ import { HeroCard } from './HeroCard';
 import { IntakeCard } from './IntakeCard';
 import { EvidenceCard } from './EvidenceCard';
 import { DenunciaCard } from './DenunciaCard';
+import { SupportCard } from './SupportCard';
 import { RightsCard } from './RightsCard';
 import { PreventionCard } from './PreventionCard';
 import { EducationCard } from './EducationCard';
@@ -20,7 +21,7 @@ export function Feed() {
   const [reportDraft, setReportDraft] = useState('');
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analyzeError, setAnalyzeError] = useState<string | null>(null);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   useEffect(() => {
     const stored = loadIntake();
@@ -28,11 +29,13 @@ export function Feed() {
     setFreeText(stored.freeText);
     setEvidenceNotes(stored.evidenceNotes);
     setReportDraft(stored.reportDraft);
+    setHasLoaded(true);
   }, []);
 
   useEffect(() => {
+    if (!hasLoaded) return;
     saveIntake({ categories, freeText, evidenceNotes, reportDraft });
-  }, [categories, freeText, evidenceNotes, reportDraft]);
+  }, [hasLoaded, categories, freeText, evidenceNotes, reportDraft]);
 
   function toggleCategory(id: Category) {
     setCategories((prev) =>
@@ -53,9 +56,6 @@ export function Feed() {
         (prev) => Array.from(new Set([...prev, ...result.categories])) as Category[]
       );
       setAiSummary(result.summary);
-      setAnalyzeError(null);
-    } catch {
-      setAnalyzeError('Não foi possível analisar agora. Tente novamente em instantes.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -79,16 +79,12 @@ export function Feed() {
         );
       case 'denuncia':
         return <DenunciaCard key={id} />;
+      case 'apoio':
+        return <SupportCard key={id} />;
       case 'direitos':
         return <RightsCard key={id} />;
       case 'prevencao':
         return <PreventionCard key={id} />;
-      case 'apoio':
-        return (
-          <p key={id} className="text-sm text-alerta-light/60">
-            (placeholder) apoio
-          </p>
-        );
       default:
         return null;
     }
@@ -105,7 +101,6 @@ export function Feed() {
         onAnalyze={handleAnalyze}
         isAnalyzing={isAnalyzing}
         aiSummary={aiSummary}
-        analyzeError={analyzeError}
       />
       {cardOrder.map(renderDynamicCard)}
       <EducationCard />
