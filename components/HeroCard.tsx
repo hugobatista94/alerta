@@ -1,6 +1,6 @@
 export function HeroCard() {
   return (
-    <section className="rounded-2xl bg-alerta-black p-6 text-alerta-light shadow-lg">
+    <section className="rounded-2xl bg-alerta-black p-5 sm:p-6 text-alerta-light shadow-lg">
       <div className="mb-3 flex items-center gap-2 text-alerta-red">
         <span aria-hidden className="text-2xl">
           ⚠️

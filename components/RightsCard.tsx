@@ -1,6 +1,6 @@
 export function RightsCard() {
   return (
-    <section className="rounded-2xl bg-alerta-red p-6 text-white shadow-lg">
+    <section className="rounded-2xl bg-alerta-red p-5 sm:p-6 text-white shadow-lg">
       <h2 className="text-lg font-bold">Direito à imagem é direito humano</h2>
       <p className="mt-2 text-sm">
         O que é seu, só você pode autorizar. Se você encontrar suas imagens em

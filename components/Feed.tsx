@@ -137,7 +137,7 @@ export function Feed() {
         <button
           type="button"
           onClick={handleClearData}
-          className="rounded-lg border border-alerta-light/40 bg-transparent px-4 py-2 text-xs font-medium text-alerta-light/70 hover:border-alerta-red hover:text-alerta-light"
+          className="min-h-[44px] rounded-lg border border-alerta-light/40 bg-transparent px-4 py-2 text-xs font-medium text-alerta-light/70 hover:border-alerta-red hover:text-alerta-light"
         >
           Apagar meus dados
         </button>

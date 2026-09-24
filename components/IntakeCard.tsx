@@ -124,9 +124,9 @@ export function IntakeCard({
   }
 
   return (
-    <section className="rounded-2xl bg-alerta-charcoal p-6 text-alerta-light shadow-lg">
+    <section className="rounded-2xl bg-alerta-charcoal p-5 sm:p-6 text-alerta-light shadow-lg">
       <h2 className="text-lg font-bold">O que aconteceu com você?</h2>
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
         {CATEGORY_OPTIONS.map((option) => (
           <Chip
             key={option.id}
@@ -146,7 +146,7 @@ export function IntakeCard({
             onClick={handleToggleListening}
             aria-pressed={isListening}
             aria-label={isListening ? 'Parar de gravar' : 'Descrever por voz'}
-            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-lg transition-colors ${
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg transition-colors ${
               isListening
                 ? 'animate-pulse bg-alerta-red text-white'
                 : 'bg-alerta-light/10 text-alerta-light hover:bg-alerta-light/20'
@@ -161,7 +161,7 @@ export function IntakeCard({
         value={freeText}
         onChange={(event) => onFreeTextChange(event.target.value)}
         rows={3}
-        className="mt-2 w-full rounded-lg bg-alerta-black p-3 text-sm text-alerta-light outline-none ring-1 ring-alerta-light/20 focus:ring-alerta-red"
+        className="mt-2 w-full rounded-lg bg-alerta-black p-3 text-base text-alerta-light outline-none ring-1 ring-alerta-light/20 focus:ring-alerta-red"
         placeholder="Ex: encontrei uma foto minha alterada com IA num grupo de WhatsApp..."
       />
       {speechSupported && (
@@ -175,7 +175,7 @@ export function IntakeCard({
         type="button"
         onClick={onAnalyze}
         disabled={isAnalyzing || freeText.trim().length === 0}
-        className="mt-3 rounded-lg bg-alerta-red px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+        className="mt-3 min-h-[44px] rounded-lg bg-alerta-red px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
       >
         {isAnalyzing ? 'Analisando...' : 'Analisar com IA'}
       </button>

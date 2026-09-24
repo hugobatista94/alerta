@@ -1,6 +1,6 @@
 export function DenunciaCard() {
   return (
-    <section className="rounded-2xl bg-alerta-charcoal p-6 text-alerta-light shadow-lg">
+    <section className="rounded-2xl bg-alerta-charcoal p-5 sm:p-6 text-alerta-light shadow-lg">
       <h2 className="text-lg font-bold">Caso aconteça, o que fazer?</h2>
       <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm">
         <li>

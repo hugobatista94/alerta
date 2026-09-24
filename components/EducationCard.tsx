@@ -2,7 +2,7 @@ import { AI_MISUSE_EXAMPLES } from '@/lib/content';
 
 export function EducationCard() {
   return (
-    <section className="rounded-2xl bg-alerta-light p-6 text-alerta-black shadow-lg">
+    <section className="rounded-2xl bg-alerta-light p-5 sm:p-6 text-alerta-black shadow-lg">
       <h2 className="text-lg font-bold">O que é?</h2>
       <p className="mt-2 text-sm">
         A inteligência artificial (IA) permite criar, editar e manipular

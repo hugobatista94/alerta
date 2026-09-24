@@ -2,7 +2,7 @@ import { PREVENTION_TIPS } from '@/lib/content';
 
 export function PreventionCard() {
   return (
-    <section className="rounded-2xl bg-alerta-light p-6 text-alerta-black shadow-lg">
+    <section className="rounded-2xl bg-alerta-light p-5 sm:p-6 text-alerta-black shadow-lg">
       <h2 className="text-lg font-bold">Prevenção</h2>
       <p className="mt-1 text-sm">
         A melhor forma de se proteger é a informação e o cuidado diário!

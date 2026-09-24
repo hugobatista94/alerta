@@ -1,6 +1,6 @@
 export function ClosingCard() {
   return (
-    <section className="rounded-2xl bg-alerta-black p-6 text-center text-alerta-light shadow-lg">
+    <section className="rounded-2xl bg-alerta-black p-5 sm:p-6 text-center text-alerta-light shadow-lg">
       <p className="text-lg font-semibold italic">
         Sua imagem é sua história. <span className="text-alerta-red">Respeite.</span>
       </p>
