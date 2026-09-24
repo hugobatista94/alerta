@@ -56,24 +56,58 @@ function composeAddress(tags?: OverpassElement['tags']): string | undefined {
   return parts.length > 0 ? parts.join(' — ') : undefined;
 }
 
+// Public Overpass instances, tried in order. overpass-api.de rejects (406)
+// requests without an identifying User-Agent, which browsers cannot set —
+// so this module must run server-side (see app/api/nearby/route.ts).
+export const OVERPASS_ENDPOINTS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter',
+];
+
+export const OSM_USER_AGENT = 'ALERTA/1.0 (+https://alerta-br.vercel.app)';
+const ENDPOINT_TIMEOUT_MS = 12000;
+
+export function parseOrigin(input: unknown): LatLon | null {
+  if (typeof input !== 'object' || input === null) return null;
+  const { lat, lon } = input as Record<string, unknown>;
+  if (typeof lat !== 'number' || typeof lon !== 'number') return null;
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+  if (Math.abs(lat) > 90 || Math.abs(lon) > 180) return null;
+  return { lat, lon };
+}
+
+async function queryOverpass(query: string): Promise<OverpassResponse> {
+  let lastError: unknown;
+  for (const endpoint of OVERPASS_ENDPOINTS) {
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'User-Agent': OSM_USER_AGENT,
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Accept: 'application/json',
+        },
+        body: `data=${encodeURIComponent(query)}`,
+        signal: AbortSignal.timeout(ENDPOINT_TIMEOUT_MS),
+      });
+      if (!response.ok) {
+        throw new Error(`Overpass API respondeu com status ${response.status}`);
+      }
+      return (await response.json()) as OverpassResponse;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError;
+}
+
 export async function findNearbySupportPoints(
   origin: LatLon,
   radiusMeters = 5000
 ): Promise<SupportPoint[]> {
-  const query = `[out:json][timeout:15];(node["amenity"="police"](around:${radiusMeters},${origin.lat},${origin.lon});way["amenity"="police"](around:${radiusMeters},${origin.lat},${origin.lon}););out center;`;
+  const query = `[out:json][timeout:10];(node["amenity"="police"](around:${radiusMeters},${origin.lat},${origin.lon});way["amenity"="police"](around:${radiusMeters},${origin.lat},${origin.lon}););out center;`;
 
-  const response = await fetch('https://overpass-api.de/api/interpreter', {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
-    body: query,
-    signal: AbortSignal.timeout(20000),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Overpass API respondeu com status ${response.status}`);
-  }
-
-  const data = (await response.json()) as OverpassResponse;
+  const data = await queryOverpass(query);
 
   return data.elements
     .map((element): SupportPoint | null => {

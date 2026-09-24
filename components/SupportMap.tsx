@@ -18,12 +18,26 @@ interface SupportMapProps {
 }
 
 export default function SupportMap({ origin, points }: SupportMapProps) {
+  // Frame the user and every support point; fall back to a fixed zoom when alone.
+  const bounds =
+    points.length > 0
+      ? L.latLngBounds([
+          [origin.lat, origin.lon],
+          ...points.map((point): [number, number] => [point.lat, point.lon]),
+        ])
+      : undefined;
+
   return (
+    // MapContainer ignores `bounds` whenever center+zoom are set.
     <MapContainer
-      center={[origin.lat, origin.lon]}
-      zoom={14}
+      center={bounds ? undefined : [origin.lat, origin.lon]}
+      zoom={bounds ? undefined : 14}
+      bounds={bounds}
+      // Extra top padding: markers are 41px tall and anchored at their tip.
+      boundsOptions={{ paddingTopLeft: [24, 56], paddingBottomRight: [24, 16] }}
       scrollWheelZoom={false}
-      style={{ height: '260px', width: '100%', borderRadius: '1rem' }}
+      className="h-[220px] sm:h-[280px] lg:h-[320px]"
+      style={{ width: '100%', borderRadius: '1rem' }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

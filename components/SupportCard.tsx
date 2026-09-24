@@ -3,7 +3,8 @@
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { NATIONAL_SUPPORT_CHANNELS } from '@/lib/supportChannels';
-import { findNearbySupportPoints, type SupportPoint } from '@/lib/overpass';
+import { fetchNearbySupportPoints } from '@/lib/nearbySupport';
+import type { SupportPoint } from '@/lib/overpass';
 
 const SupportMap = dynamic(() => import('./SupportMap'), { ssr: false });
 
@@ -29,7 +30,7 @@ export function SupportCard() {
         };
         setOrigin(nextOrigin);
         try {
-          const nearby = await findNearbySupportPoints(nextOrigin);
+          const nearby = await fetchNearbySupportPoints(nextOrigin);
           setPoints(nearby);
           setStatus('granted');
         } catch {
@@ -42,7 +43,7 @@ export function SupportCard() {
   }
 
   return (
-    <section className="rounded-2xl bg-alerta-charcoal p-6 text-alerta-light shadow-lg">
+    <section className="rounded-2xl bg-alerta-charcoal p-5 sm:p-6 text-alerta-light shadow-lg">
       <h2 className="text-lg font-bold">Rede de apoio</h2>
       <ul className="mt-3 space-y-2 text-sm">
         {NATIONAL_SUPPORT_CHANNELS.map((channel) => (
@@ -54,7 +55,7 @@ export function SupportCard() {
                 href={channel.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="underline text-alerta-light hover:text-alerta-red"
+                className="inline-flex min-h-[44px] items-center underline text-alerta-light hover:text-alerta-red"
               >
                 Abrir canal
               </a>
@@ -67,7 +68,7 @@ export function SupportCard() {
         type="button"
         onClick={handleFindNearby}
         disabled={status === 'loading'}
-        className="mt-4 rounded-lg bg-alerta-red px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+        className="mt-4 min-h-[44px] rounded-lg bg-alerta-red px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
       >
         {status === 'loading' ? 'Localizando...' : 'Ver apoio perto de mim'}
       </button>

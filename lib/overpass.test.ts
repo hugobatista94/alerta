@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { haversineDistanceKm, findNearbySupportPoints } from './overpass';
+import {
+  haversineDistanceKm,
+  findNearbySupportPoints,
+  parseOrigin,
+  OVERPASS_ENDPOINTS,
+} from './overpass';
 
 describe('haversineDistanceKm', () => {
   it('returns ~0 for the same point', () => {
@@ -66,11 +71,73 @@ describe('findNearbySupportPoints', () => {
     expect(perto?.address).toBeUndefined();
   });
 
-  it('throws when the Overpass API responds with an error status', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 500 }));
+  it('identifies itself and sends the query as form data', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ elements: [] }) });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await findNearbySupportPoints({ lat: -23.55, lon: -46.63 });
+
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe(OVERPASS_ENDPOINTS[0]);
+    expect(init.method).toBe('POST');
+    expect(init.headers['User-Agent']).toMatch(/^ALERTA\//);
+    expect(init.headers['Content-Type']).toBe('application/x-www-form-urlencoded');
+    expect(init.body).toMatch(/^data=/);
+    expect(decodeURIComponent(init.body.slice('data='.length))).toContain('amenity');
+  });
+
+  it('falls back to the next endpoint when one rejects the request', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false, status: 406 })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ elements: [{ id: 7, lat: 0.001, lon: 0.001, tags: { name: 'Plantão' } }] }),
+      });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const points = await findNearbySupportPoints({ lat: 0, lon: 0 });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[1][0]).toBe(OVERPASS_ENDPOINTS[1]);
+    expect(points[0].name).toBe('Plantão');
+  });
+
+  it('falls back to the next endpoint when one fails with a network error', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('timeout'))
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ elements: [] }) });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(findNearbySupportPoints({ lat: 0, lon: 0 })).resolves.toEqual([]);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('throws when every Overpass endpoint responds with an error status', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: false, status: 500 });
+    vi.stubGlobal('fetch', fetchMock);
 
     await expect(findNearbySupportPoints({ lat: 0, lon: 0 })).rejects.toThrow(
       'Overpass API respondeu com status 500'
     );
+    expect(fetchMock).toHaveBeenCalledTimes(OVERPASS_ENDPOINTS.length);
+  });
+});
+
+describe('parseOrigin', () => {
+  it('accepts valid coordinates', () => {
+    expect(parseOrigin({ lat: -23.55, lon: -46.63 })).toEqual({ lat: -23.55, lon: -46.63 });
+  });
+
+  it.each([
+    [null],
+    [{}],
+    [{ lat: '10', lon: 20 }],
+    [{ lat: 91, lon: 0 }],
+    [{ lat: 0, lon: -181 }],
+    [{ lat: Number.NaN, lon: 0 }],
+  ])('rejects invalid input %j', (input) => {
+    expect(parseOrigin(input)).toBeNull();
   });
 });
